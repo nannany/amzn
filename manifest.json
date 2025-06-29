@@ -7,6 +7,9 @@
     "activeTab",
     "scripting"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["*://*.amazon.co.jp/*", "*://*.amazon.com/*"],
@@ -14,7 +17,6 @@
     }
   ],
   "action": {
-    "default_popup": "popup.html",
     "default_title": "Amazon URL Formatter"
   },
   "icons": {
