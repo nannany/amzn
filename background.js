@@ -47,7 +47,7 @@ chrome.omnibox.onInputEntered.addListener(async (text) => {
 
 chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   if (message.type === 'close-offscreen') {
-    // chrome.offscreen.closeDocument();
+    chrome.offscreen.closeDocument();
   } else if (message.type === 'copy-success') {
     console.log('Copy successful:', message.text);
     // offscreen documentを閉じる
