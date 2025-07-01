@@ -15,20 +15,32 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-function formatAndCopyUrl() {
-  function formatAmazonUrl(url) {
-    const urlObj = new URL(url);
-    const pathParts = urlObj.pathname.split('/');
-    const dpIndex = pathParts.indexOf('dp');
-    
-    if (dpIndex !== -1 && dpIndex + 1 < pathParts.length) {
-      const productId = pathParts[dpIndex + 1];
-      return `${urlObj.origin}/dp/${productId}`;
-    }
-    
-    return url;
+chrome.omnibox.onInputEntered.addListener((text) => {
+  console.log('Original text:', text);
+  const formattedUrl = formatAmazonUrl(text);
+  console.log('Formatted URL:', formattedUrl);
+  // clipboardにコピーする
+  navigator.clipboard.writeText(formattedUrl).then(() => {
+      console.log('URL copied to clipboard:', formattedUrl);
+  }).catch(err => {
+      console.error('Failed to copy URL:', err);
+  });
+});
+
+function formatAmazonUrl(url) {
+  const urlObj = new URL(url);
+  const pathParts = urlObj.pathname.split('/');
+  const dpIndex = pathParts.indexOf('dp');
+
+  if (dpIndex !== -1 && dpIndex + 1 < pathParts.length) {
+    const productId = pathParts[dpIndex + 1];
+    return `${urlObj.origin}/dp/${productId}`;
   }
 
+  return url;
+}
+
+function formatAndCopyUrl() {
   async function copyToClipboard(text) {
     try {
       await navigator.clipboard.writeText(text);
