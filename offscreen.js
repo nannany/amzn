@@ -1,4 +1,4 @@
-chrome.runtime.onMessage.addListener(async (message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async (message, _sender, _sendResponse) => {
   if (message.type === 'copy-to-clipboard') {
     console.log('Attempting to copy:', message.text);
     console.log('Navigator clipboard available:', !!navigator.clipboard);

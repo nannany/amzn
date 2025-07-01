@@ -1,4 +1,4 @@
-chrome.action.onClicked.addListener(async (tab) => {
+chrome.action.onClicked.addListener(async (_tab) => {
   try {
     const [tab] = await chrome.tabs.query({active: true, currentWindow: true});
     
@@ -45,7 +45,7 @@ chrome.omnibox.onInputEntered.addListener(async (text) => {
   }
 });
 
-chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
   if (message.type === 'close-offscreen') {
     // chrome.offscreen.closeDocument();
   } else if (message.type === 'copy-success') {
