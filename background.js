@@ -16,10 +16,23 @@ chrome.action.onClicked.addListener(async (_tab) => {
 });
 
 chrome.omnibox.onInputEntered.addListener(async (text) => {
-  console.log('Original text:', text);
   const formattedUrl = formatAmazonUrl(text);
-  console.log('Formatted URL:', formattedUrl);
-  
+
+  // テスト通知を即座に表示
+  chrome.notifications.create('test-notification', {
+    type: 'basic',
+    iconUrl: 'icon48.png',
+    title: 'Test Notification',
+    message: 'omnibox input received: ' + text,
+    priority: 2
+  }, (notificationId) => {
+    if (chrome.runtime.lastError) {
+      console.error('Test notification error:', chrome.runtime.lastError);
+    } else {
+      console.log('Test notification created:', notificationId);
+    }
+  });
+
   try {
     // 既存のoffscreen documentがあるかチェック
     const existingContexts = await chrome.runtime.getContexts({
@@ -50,6 +63,25 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     chrome.offscreen.closeDocument();
   } else if (message.type === 'copy-success') {
     console.log('Copy successful:', message.text);
+    
+    // 通知を表示
+    const notificationId = 'amazon-url-copy-success';
+    chrome.notifications.create(notificationId, {
+      type: 'basic',
+      iconUrl: 'icon48.png',
+      title: 'Amazon URL Formatter',
+      message: `整形されたURLをクリップボードにコピーしました\n${message.text}`,
+      priority: 2
+    }, (notificationId) => {
+      if (chrome.runtime.lastError) {
+        console.error('Notification error:', chrome.runtime.lastError);
+      } else {
+        console.log('Notification created successfully:', notificationId);
+      }
+    });
+
+    console.log('notification send:', message.text);
+    
     // offscreen documentを閉じる
     setTimeout(() => {
       chrome.offscreen.closeDocument().catch(err => {
@@ -58,6 +90,22 @@ chrome.runtime.onMessage.addListener((message, _sender, _sendResponse) => {
     }, 1000);
   } else if (message.type === 'copy-error') {
     console.error('Copy failed:', message.error);
+    
+    // エラー通知を表示
+    const errorNotificationId = 'amazon-url-copy-error';
+    chrome.notifications.create(errorNotificationId, {
+      type: 'basic',
+      iconUrl: 'icon48.png',
+      title: 'Amazon URL Formatter',
+      message: 'クリップボードへのコピーに失敗しました',
+      priority: 2
+    }, (notificationId) => {
+      if (chrome.runtime.lastError) {
+        console.error('Error notification failed:', chrome.runtime.lastError);
+      } else {
+        console.log('Error notification created:', notificationId);
+      }
+    });
   }
 });
 
