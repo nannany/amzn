@@ -15,16 +15,50 @@ chrome.action.onClicked.addListener(async (tab) => {
   }
 });
 
-chrome.omnibox.onInputEntered.addListener((text) => {
+chrome.omnibox.onInputEntered.addListener(async (text) => {
   console.log('Original text:', text);
   const formattedUrl = formatAmazonUrl(text);
   console.log('Formatted URL:', formattedUrl);
-  // clipboardにコピーする
-  navigator.clipboard.writeText(formattedUrl).then(() => {
-      console.log('URL copied to clipboard:', formattedUrl);
-  }).catch(err => {
-      console.error('Failed to copy URL:', err);
-  });
+  
+  try {
+    // 既存のoffscreen documentがあるかチェック
+    const existingContexts = await chrome.runtime.getContexts({
+      contextTypes: ['OFFSCREEN_DOCUMENT'],
+      documentUrls: [chrome.runtime.getURL('offscreen.html')]
+    });
+
+    if (existingContexts.length === 0) {
+      await chrome.offscreen.createDocument({
+        url: 'offscreen.html',
+        reasons: ['CLIPBOARD'],
+        justification: 'Copy formatted URL to clipboard'
+      });
+    }
+    
+    chrome.runtime.sendMessage({
+      type: 'copy-to-clipboard',
+      text: formattedUrl
+    });
+    
+  } catch (error) {
+    console.error('Error copying to clipboard:', error);
+  }
+});
+
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+  if (message.type === 'close-offscreen') {
+    // chrome.offscreen.closeDocument();
+  } else if (message.type === 'copy-success') {
+    console.log('Copy successful:', message.text);
+    // offscreen documentを閉じる
+    setTimeout(() => {
+      chrome.offscreen.closeDocument().catch(err => {
+        console.log('Error closing offscreen document:', err);
+      });
+    }, 1000);
+  } else if (message.type === 'copy-error') {
+    console.error('Copy failed:', message.error);
+  }
 });
 
 function formatAmazonUrl(url) {
